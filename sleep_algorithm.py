@@ -41,6 +41,7 @@ class SleepDetector:
         self.count_4_min = 0
         self.count_10_min = 0
         self.count_15_min = 0
+        self.occupied = False
         self.unoccupied_count = 4
 
         self.aio = Client('501a8c0fc893498699f4f5ba6b3b4e1c')
@@ -51,8 +52,10 @@ class SleepDetector:
         while(True):
             # Record movement data every 10s for 60s
             self.get_movement()
-            # Compute sleep status for a single minute
+            
+            # If occupied, compute sleep state
             if self.unoccupied_count < 4:
+                # Compute sleep status for a single minute
                 self.compute_sleep()
                 # If sleep status has changed, send to panel
                 self.send_sleep_status()
@@ -64,24 +67,31 @@ class SleepDetector:
             rdata = None
             for j in range(0, 10):
                 rdata = self.x4m200.read_message_respiration_sleep()
-                # print("Frame: {} RPM: {} Distance: {} Movement Slow: {} Movement Fast: {}"
-                #       .format(rdata.frame_count, rdata.respiration_rate,
-                #               rdata.distance, rdata.movement_slow,
-                #               rdata.movement_fast))
-                if rdata.movement_slow == 0 and self.unoccupied_count < 4:
-                    self.unoccupied_count += 1
-                    if self.unoccupied_count == 1:
-                        self.send_occupancy()
-                elif rdata.movement_slow != 0 and self.unoccupied_count > 0:
-                    self.unoccupied_count = 0
+                print(rdata.movement_slow)
+                # print("Frame: {} RPM: {} Distance: {} Movement Slow: {} Movement Fast: {}".format(rdata.frame_count, rdata.respiration_rate,rdata.distance, rdata.movement_slow,rdata.movement_fast))
+                if rdata.movement_slow == 0 and self.occupied:
+                    self.occupied = False
                     self.send_occupancy()
+                elif rdata.movement_slow != 0 and not self.occupied:
+                    self.occupied = True
+                    self.send_occupancy()
+                    self.unoccupied_count = 0
+
 
                 #sleep(0.2)  # is this needed?
             self.movement_slow.append(rdata.movement_slow)
+            print('Movement Slow {}'.format(self.movement_slow))
+            if len(self.movement_slow) > 6:
+                self.movement_slow.pop(0)
+
             self.aio.send('Sleep Data', rdata.movement_slow)
+
+        if not self.occupied and self.unoccupied_count < 4:
+            self.unoccupied_count += 1
 
     def compute_sleep(self):
         print(self.movement_slow)
+        print(self.movement_slow[-1])
         if len(self.movement_slow) != 6:
             raise Exception(
                 "Error. Must have 60s of\
@@ -89,7 +99,7 @@ class SleepDetector:
 
         # Add max movement in 1 minute to activity score
         self.activity_score.append(max(self.movement_slow))
-        self.movement_slow.clear()
+        # self.movement_slow.clear()
 
         # Must have 7 minutes of data
         if len(self.activity_score) < 7:
@@ -113,7 +123,7 @@ class SleepDetector:
         # 0: Asleep
         if status > 1:
             self.sleep_status.append(1)
-            self.rescore.append(1)
+            self.rescored_status.append(1)
             if self.count_4_min < 4:
                 self.count_4_min += 1
             if self.count_10_min < 10:
@@ -121,13 +131,16 @@ class SleepDetector:
             if self.count_15_min < 15:
                 self.count_15_min += 1
         else:
-            rescore()
+            self.rescore()
             self.sleep_status.append(0)
             self.count_4_min = 0
             if self.count_10_min < 10 or self.count_10_min > 13:
                 self.count_10_min = 0
             else:
                 self.count_10_min += 1
+
+            if self.count_15_min < 15 or self.count_15_min > 19:
+                self.count_15_min = 0
 
         self.activity_score.pop(0)
         print("Current Sleep status: {}".format(self.sleep_status[-1]))
@@ -137,32 +150,32 @@ class SleepDetector:
         if (self.count_4_min >= 4 or 
                 self.count_10_min >= 10 or
                 self.count_15_min >= 15): 
-            self.rescore.append(1)
+            self.rescored_status.append(1)
         else:
-            self.rescore.append(0)
+            self.rescored_status.append(0)
 
 
 
     def send_sleep_status(self):
-        if(len(self.rescore) < 2):
+        if(len(self.rescored_status) < 2):
             return
         # Send on state changes
-        if(self.rescore[-1] != self.rescore[-2]):
+        if(self.rescored_status[-1] != self.rescored_status[-2]):
             # Send http request to endpoint
-            if self.rescore[-1] == 1:
+            if self.rescored_status[-1] == 1:
                 print("\nSleep State Change: Awake\n")
                 self.aio.send('Sleep Report', 1)
             else:
                 print("\nSleep State Change: Asleep\n")
                 self.aio.send('Sleep Report', 0)
 
-        if(len(self.rescore) > 1440):
-            self.rescore.pop(0)
+        if(len(self.rescored_status) > 1440):
+            self.rescored_status.pop(0)
         if(len(self.sleep_status) > 1440):
             self.sleep_status.pop(0)
 
     def send_occupancy(self):
-        if self.unoccupied_count == 0:
+        if self.occupied:
             print("\nOccupancy Change: Occupied\n")
             self.aio.send('Occupancy Report', 1)
         else:
