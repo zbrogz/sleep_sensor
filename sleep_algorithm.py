@@ -40,8 +40,8 @@ class SleepDetector:
         self.rescored_status = []
         self.count_4_min = 0
         self.count_10_min = 0
-        self.count_15_min = 0 
-        self.unoccupied_count = 0
+        self.count_15_min = 0
+        self.unoccupied_count = 4
 
         self.aio = Client('501a8c0fc893498699f4f5ba6b3b4e1c')
         self.aio.send('Sleep Report', 1)
@@ -53,9 +53,9 @@ class SleepDetector:
             self.get_movement()
             # Compute sleep status for a single minute
             if self.unoccupied_count < 4:
-            	self.compute_sleep()
-            	# If sleep status has changed, send to panel
-            	self.send_sleep_status()
+                self.compute_sleep()
+                # If sleep status has changed, send to panel
+                self.send_sleep_status()
 
     def get_movement(self):
         # For one minute
@@ -71,7 +71,7 @@ class SleepDetector:
                 if rdata.movement_slow == 0 and self.unoccupied_count < 4:
                     self.unoccupied_count += 1
                     if self.unoccupied_count == 1:
-                    	self.send_occupancy()
+                        self.send_occupancy()
                 elif rdata.movement_slow != 0 and self.unoccupied_count > 0:
                     self.unoccupied_count = 0
                     self.send_occupancy()
@@ -115,31 +115,31 @@ class SleepDetector:
             self.sleep_status.append(1)
             self.rescore.append(1)
             if self.count_4_min < 4:
-            	self.count_4_min += 1
+                self.count_4_min += 1
             if self.count_10_min < 10:
-            	self.count_10_min += 1
+                self.count_10_min += 1
             if self.count_15_min < 15:
-            	self.count_15_min += 1
+                self.count_15_min += 1
         else:
-        	rescore()
+            rescore()
             self.sleep_status.append(0)
             self.count_4_min = 0
             if self.count_10_min < 10 or self.count_10_min > 13:
-            	self.count_10_min = 0
+                self.count_10_min = 0
             else:
-            	self.count_10_min += 1
+                self.count_10_min += 1
 
         self.activity_score.pop(0)
         print("Current Sleep status: {}".format(self.sleep_status[-1]))
 
 
     def rescore(self, status):
-    	if (self.count_4_min >= 4 or 
-    			self.count_10_min >= 10 or
-    			self.count_15_min >= 15): 
-    		self.rescore.append(1)
-    	else:
-    		self.rescore.append(0)
+        if (self.count_4_min >= 4 or 
+                self.count_10_min >= 10 or
+                self.count_15_min >= 15): 
+            self.rescore.append(1)
+        else:
+            self.rescore.append(0)
 
 
 
@@ -162,7 +162,7 @@ class SleepDetector:
             self.sleep_status.pop(0)
 
     def send_occupancy(self):
-        if self.occupied:
+        if self.unoccupied_count == 0:
             print("\nOccupancy Change: Occupied\n")
             self.aio.send('Occupancy Report', 1)
         else:
