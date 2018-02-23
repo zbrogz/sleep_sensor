@@ -152,7 +152,7 @@ class SleepDetector:
                 self.count_15_min = 0
 
         self.activity_score.pop(0)
-        print("Current Sleep status: {}".format(self.rescore_status[-1]))
+        print("Current Sleep status: {}".format(self.rescored_status[-1]))
 
     # Rescoring rules for reducing false positives of sleep detection
     def rescore(self):
