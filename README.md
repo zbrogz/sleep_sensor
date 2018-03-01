@@ -43,4 +43,9 @@ network={
 5. SSH into the pi while connected to the same WiFi: `ssh pi@raspberrypi.local`
   - The default password is 'raspberry'
 6. Change the default password for security: `passwd` ...
-7. 
+7. Install XeThru ModuleConnector
+...
+8. Install AdafruitIO package for Python 3: `sudo pip3 install adafruit-io`
+9. Download the sleep algorithm: `git clone https://github.com/zbrogz/sleep_sensor.git`
+10. Configure the algorithm to run at boot:
+...
