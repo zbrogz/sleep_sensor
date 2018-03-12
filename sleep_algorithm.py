@@ -49,8 +49,6 @@ class SleepDetector:
         self.aio = Client('da24bb7eb9fe4d4db98227da64e94191')
         
 
-# NEXT: add inits
-
     def send_sleep(self):
         print("Current sleep state: {}".format(self.rescored[-1]))
         # Only send if sleep state has changed since last minute
