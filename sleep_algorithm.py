@@ -171,7 +171,7 @@ class SleepDetector:
 
 
 def main():
-    SD = SleepDetector(device_name='/dev/cu.usbmodem1421', test=False)#("/dev/ttyS0")
+    SD = SleepDetector(device_name='/dev/ttyS0', test=False)#("/dev/cu.usbmodem1421")
     while(True):
         SD.run() # Begin algorithm
 
