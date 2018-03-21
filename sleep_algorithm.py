@@ -133,7 +133,7 @@ class SleepDetector:
 
     def get_activity(self):
         self.activity.append(max(self.epoch))
-        self.epoch.clear()
+        del self.epoch[:]
 
 
     def get_epoch(self):
