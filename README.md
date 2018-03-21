@@ -10,9 +10,10 @@ This installation was done on macOS High Sierra (10.13.2)
 Connect the XeThru to the Mac over usb using a micro usb male to usb male cord.
 #### Software
 
-1. Install Python 3
+1. Install Python 2
   - This is easiest using Homebrew: https://brew.sh/
-  - `sudo brew install python3`
+  - `sudo brew install python2`
+  - Otherwise macOS comes built with a slightly older version of python 2 that should work still.
 2. Install XeThru ModuleConnector
 
 ... To be continued
@@ -50,7 +51,7 @@ network={
   ...
 8. Install XeThru ModuleConnector
 ...
-9. Install AdafruitIO package for Python 3: `sudo pip3 install adafruit-io`
+9. Install AdafruitIO package for Python 2: `sudo pip2 install adafruit-io`
 10. Download the sleep algorithm: `git clone https://github.com/zbrogz/sleep_sensor.git`
 11. Configure the algorithm to run at boot:
 ...
