@@ -37,7 +37,7 @@ class SleepDetector:
         except RuntimeError:
             # Sensor already stopped, OK
             pass
-        self.x4m200.set_led_control(mode=0)
+        self.x4m200.set_led_control(mode=0, intensity=50)
         self.x4m200.set_output_control(0x610a3b00, 1)
         print("Waiting two minutes for xethru to finish init")
         sleep(120) # Wait 2 minutes for init
