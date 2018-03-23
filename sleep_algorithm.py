@@ -37,7 +37,9 @@ class SleepDetector:
         except RuntimeError:
             # Sensor already stopped, OK
             pass
+        self.x4m200.set_led_control(mode=0)
         self.x4m200.set_output_control(0x610a3b00, 1)
+        print("Waiting two minutes for xethru to finish init")
         sleep(120) # Wait 2 minutes for init
 
         self.movement = None
@@ -47,19 +49,16 @@ class SleepDetector:
         self.rescored = []
         self.occupied = False
         self.aio = Client('da24bb7eb9fe4d4db98227da64e94191')
+        print("Init complete")
         
 
     def send_sleep(self):
-        print("Current sleep state: {}".format(self.rescored[-1]))
-        # Only send if sleep state has changed since last minute
-        if ((len(self.rescored) > 1 and self.rescored[-1] != self.rescored[-2]) or
-                len(self.rescored) == 1):
-            if self.rescored[-1] == 1:
-                print("\nSleep State Change: Awake\n")
-                self.aio.send('Sleep', 1)
-            else:
-                print("\nSleep State Change: Asleep\n")
-                self.aio.send('Sleep', 0)
+        if self.rescored[-1] == 1:
+            print("\nSleep State: Awake\n")
+            self.aio.send('Sleep', 1)
+        else:
+            print("\nSleep State: Asleep\n")
+            self.aio.send('Sleep', 0)
 
         # Keep around 24 hours of sleep data
         # Change this to lower value to save memory
@@ -71,10 +70,10 @@ class SleepDetector:
 
     def send_occupancy(self):
         if self.occupied:
-            print("\nOccupancy Change: Occupied\n")
+            print("\nOccupancy: Occupied\n")
             self.aio.send('Occupancy', 1)
         else:
-            print("\nOccupancy Change: Unoccupied\n")
+            print("\nOccupancy: Unoccupied\n")
             self.aio.send('Occupancy', 0)
 
 
@@ -126,8 +125,7 @@ class SleepDetector:
         self.sleep.append(status)
         # Apply rescore rules
         self.rescore()
-        # Send state on change
-        self.send_sleep()
+        print("Current sleep state: {}".format(self.rescored[-1]))
         self.activity.pop(0)
 
 
@@ -168,6 +166,9 @@ class SleepDetector:
         # compute sleep from activity scores
         self.get_activity()
         self.get_sleep()
+        # Send state every minute
+        self.send_sleep()
+        self.send_occupancy()
 
 
 def main():
