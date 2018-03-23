@@ -50,7 +50,13 @@ network={
   - 'Serial'
   - Select 'No' for login shell
   - Select 'Yes' to enable serial port
-  ...
+7.  Download the sleep algorithm: `git clone https://github.com/zbrogz/sleep_sensor.git`
+8. `cd sleep_sensor`
+9. Install the dependencies: `sudo bash setup.sh`
+10. `sudo reboot`
+  
+  
+  Manual Install (if something goes wrong with script):
 8. Install XeThru ModuleConnector
 ...
 9. Install AdafruitIO package for Python 2: `sudo pip2 install adafruit-io`
