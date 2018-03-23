@@ -54,10 +54,10 @@ class SleepDetector:
 
     def send_sleep(self):
         if self.rescored[-1] == 1:
-            print("\nSleep State: Awake\n")
+            print("\nAwake (1)\n")
             self.aio.send('Sleep', 1)
         else:
-            print("\nSleep State: Asleep\n")
+            print("\Asleep (0)\n")
             self.aio.send('Sleep', 0)
 
         # Keep around 24 hours of sleep data
@@ -70,10 +70,10 @@ class SleepDetector:
 
     def send_occupancy(self):
         if self.occupied:
-            print("\nOccupancy: Occupied\n")
+            print("\nOccupied (1)\n")
             self.aio.send('Occupancy', 1)
         else:
-            print("\nOccupancy: Unoccupied\n")
+            print("\nUnoccupied (0)\n")
             self.aio.send('Occupancy', 0)
 
 
@@ -125,12 +125,12 @@ class SleepDetector:
         self.sleep.append(status)
         # Apply rescore rules
         self.rescore()
-        print("Current sleep state: {}".format(self.rescored[-1]))
         self.activity.pop(0)
 
 
     def get_activity(self):
         self.activity.append(max(self.epoch))
+        print("Current activity score: {}".format(self.activity[-1]))        
         del self.epoch[:]
 
 
