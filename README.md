@@ -46,8 +46,10 @@ network={
 6. Configure rpi options
   - `raspi-config`
   - 'Change User Password' for security
-  - 'Advanced Options'
+  - 'Interfacing Options'
   - 'Serial'
+  - Select 'No' for login shell
+  - Select 'Yes' to enable serial port
   ...
 8. Install XeThru ModuleConnector
 ...
