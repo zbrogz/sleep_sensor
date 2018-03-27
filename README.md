@@ -29,12 +29,13 @@ network={
 5. SSH into the pi while connected to the same WiFi: `ssh pi@raspberrypi.local`
   - The default password is 'raspberry'
 6. Configure rpi options
-  - `raspi-config`
+  - `sudo raspi-config`
   - 'Change User Password' for security
   - 'Interfacing Options'
   - 'Serial'
   - Select 'No' for login shell
   - Select 'Yes' to enable serial port
+  - Finish, reboot.
 7.  Download the sleep algorithm: `git clone https://github.com/zbrogz/sleep_sensor.git`
 8. `cd sleep_sensor`
 9. Install the dependencies: `sudo bash setup.sh`
