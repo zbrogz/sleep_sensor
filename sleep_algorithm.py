@@ -40,7 +40,7 @@ class SleepDetector:
         self.x4m200.set_led_control(mode=0, intensity=50)
         self.x4m200.set_output_control(0x610a3b00, 1)
         print("Waiting two minutes for xethru to finish init")
-        sleep(120) # Wait 2 minutes for init
+        #sleep(120) # Wait 2 minutes for init
 
         self.movement = None
         self.epoch = []
