@@ -5,8 +5,8 @@ from Adafruit_IO import *
 
 '''
 Sleep/Occupancy States
-Occupancy:      0 (unoccupied)      1 (Occupied)
-Sleep:          0 (alseep)          1 (awake)      
+Occupancy:      0 (unoccupied)      1 (occupied)
+Sleep:          0 (alseep)          1 (awake)       -1 (unoccupied)
 '''
 class SleepDetector:
     def __init__(self, device_name, test=False):
@@ -84,8 +84,8 @@ class SleepDetector:
         wake_15 = [1]*15 
 
         # already awake, no rescore needed
-        if self.sleep[-1] == 1:
-            self.rescored.append(1)
+        if self.sleep[-1] == 1 or self.sleep[-1] == -1:
+            self.rescored.append(self.sleep[-1])
             return
         # 4 min awake rescore next 1 min awake
         if (len(self.sleep) >= 5 and
@@ -122,7 +122,11 @@ class SleepDetector:
             508 * self.activity[-2] +
             350 * self.activity[-1])
         status = 1 if status >= 1 else 0
-        self.sleep.append(status)
+        # Unoccupied during period:
+        if self.activity[-3] == 0:
+            self.sleep.append(-1)
+        else:
+            self.sleep.append(status)
         # Apply rescore rules
         self.rescore()
         self.activity.pop(0)
