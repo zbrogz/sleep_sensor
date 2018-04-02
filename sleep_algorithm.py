@@ -32,12 +32,13 @@ class SleepDetector:
 
         # Load x4m200 respiration detection profile
         self.x4m200.load_profile(0x47fabeba)
+        self.x4m200.set_sensitivity(5)
+        self.x4m200.set_led_control(mode=0, intensity=50)
         try:
             self.x4m200.set_sensor_mode(0x01, 0)  # RUN mode
         except RuntimeError:
             # Sensor already stopped, OK
             pass
-        self.x4m200.set_led_control(mode=0, intensity=50)
         self.x4m200.set_output_control(0x610a3b00, 1)
         print("Waiting two minutes for xethru to finish init")
         #sleep(120) # Wait 2 minutes for init
@@ -56,9 +57,12 @@ class SleepDetector:
         if self.rescored[-1] == 1:
             print("\nAwake (1)\n")
             self.aio.send('Sleep', 1)
-        else:
+        elif self.rescored[-1] == 0:
             print("\Asleep (0)\n")
             self.aio.send('Sleep', 0)
+        else:
+            print("\Unoccupied (-1)\n")
+            self.aio.send('Sleep', -1)
 
         # Keep around 24 hours of sleep data
         # Change this to lower value to save memory
@@ -70,10 +74,10 @@ class SleepDetector:
 
     def send_occupancy(self):
         if self.occupied:
-            print("\nOccupied (1)\n")
+            print("\nState change: Occupied (1)\n")
             self.aio.send('Occupancy', 1)
         else:
-            print("\nUnoccupied (0)\n")
+            print("\nState change: Unoccupied (0)\n")
             self.aio.send('Occupancy', 0)
 
 
@@ -148,10 +152,10 @@ class SleepDetector:
         rdata = self.x4m200.read_message_respiration_sleep()
         self.movement = rdata.movement_slow
         # Check occupancy, send on state changes
-        if self.movement == 0 and self.occupied:
+        if rdata.sensor_state == 3 and self.occupied:
             self.occupied = False
             self.send_occupancy()
-        elif self.movement != 0 and not self.occupied:
+        elif rdata.sensor_state != 3 and not self.occupied:
             self.occupied = True
             self.send_occupancy()
 
