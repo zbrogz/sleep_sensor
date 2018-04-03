@@ -26,7 +26,8 @@ class SleepDetector:
         self.x4m200 = self.mc.get_x4m200()
         self.recorder = self.mc.get_data_recorder()
         self.recorder.subscribe_to_file_available(DataType.SleepDataType, self.on_file_available)
-        self.recorder.start_recording(DataType.SleepDataType, "./logs/")
+        self.recorder.subscribe_to_meta_file_available(self.on_meta_file_available)
+        self.recorder.start_recording(DataType.SleepDataType, "./logs")
 
         # Stop running application and set module in manual mode.
         try:
@@ -68,6 +69,10 @@ class SleepDetector:
             print("processing baseband ap data from file")
         elif data_type == DataType.SleepDataType:
             print("processing sleep data from file")
+
+    def on_meta_file_available(self, session_id, meta_filename):
+        print("new meta file available for recording with id: {}".format(session_id))
+        print("  |- file: {}".format(meta_filename))
 
     def send_sleep(self):
         if self.rescored[-1] == 1:
