@@ -1,6 +1,9 @@
 from __future__ import print_function
 from time import sleep
 from pymoduleconnector import ModuleConnector
+from pymoduleconnector import DataType
+from pymoduleconnector import DataRecorder
+from pymoduleconnector import RecordingOptions
 from Adafruit_IO import *
 
 '''
@@ -21,6 +24,9 @@ class SleepDetector:
         # Assume an X4M300/X4M200 module and try to enter XEP mode
         self.mc = ModuleConnector(device_name)
         self.x4m200 = self.mc.get_x4m200()
+        self.recorder = self.mc.get_data_recorder()
+        self.recorder.subscribe_to_file_available(DataType.SleepDataType, self.on_file_available)
+        self.recorder.start_recording(DataType.SleepDataType, "./logs/")
 
         # Stop running application and set module in manual mode.
         try:
@@ -32,7 +38,11 @@ class SleepDetector:
 
         # Load x4m200 respiration detection profile
         self.x4m200.load_profile(0x47fabeba)
+        # Sensitivity can be adjusted to reduce false positives (0-9, default 5)
         self.x4m200.set_sensitivity(5)
+        # Setting detection zone (in meters) can also reduce false positives.
+        # For example, smaller rooms may benefit from reducing the second parameter to the room size
+        self.x4m200.set_detection_zone(0.4, 5.0)
         self.x4m200.set_led_control(mode=0, intensity=50)
         try:
             self.x4m200.set_sensor_mode(0x01, 0)  # RUN mode
@@ -40,8 +50,6 @@ class SleepDetector:
             # Sensor already stopped, OK
             pass
         self.x4m200.set_output_control(0x610a3b00, 1)
-        print("Waiting two minutes for xethru to finish init")
-        #sleep(120) # Wait 2 minutes for init
 
         self.movement = None
         self.epoch = []
@@ -53,15 +61,23 @@ class SleepDetector:
         print("Init complete")
         
 
+    def on_file_available(self, data_type, filename):
+        print("new file available for data type: {}".format(data_type))
+        print("  |- file: {}".format(filename))
+        if data_type == DataType.BasebandApDataType:
+            print("processing baseband ap data from file")
+        elif data_type == DataType.SleepDataType:
+            print("processing sleep data from file")
+
     def send_sleep(self):
         if self.rescored[-1] == 1:
-            print("\nAwake (1)\n")
+            print("\nSleep: Awake (1)\n")
             self.aio.send('Sleep', 1)
         elif self.rescored[-1] == 0:
-            print("\Asleep (0)\n")
+            print("\nSleep: Asleep (0)\n")
             self.aio.send('Sleep', 0)
         else:
-            print("\Unoccupied (-1)\n")
+            print("\nSleep: Unoccupied (-1)\n")
             self.aio.send('Sleep', -1)
 
         # Keep around 24 hours of sleep data
@@ -74,10 +90,10 @@ class SleepDetector:
 
     def send_occupancy(self):
         if self.occupied:
-            print("\nState change: Occupied (1)\n")
+            print("\nOccupancy: Occupied (1)\n")
             self.aio.send('Occupancy', 1)
         else:
-            print("\nState change: Unoccupied (0)\n")
+            print("\nOccupancy: Unoccupied (0)\n")
             self.aio.send('Occupancy', 0)
 
 
