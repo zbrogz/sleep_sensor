@@ -40,10 +40,11 @@ class SleepDetector:
         # Load x4m200 respiration detection profile
         self.x4m200.load_profile(0x47fabeba)
         # Sensitivity can be adjusted to reduce false positives (0-9, default 5)
-        self.x4m200.set_sensitivity(5)
+        self.x4m200.set_sensitivity(1)
         # Setting detection zone (in meters) can also reduce false positives.
         # For example, smaller rooms may benefit from reducing the second parameter to the room size
         self.x4m200.set_detection_zone(0.4, 5.0)
+        # Turn off LEDs
         self.x4m200.set_led_control(mode=0, intensity=50)
         try:
             self.x4m200.set_sensor_mode(0x01, 0)  # RUN mode
@@ -65,10 +66,7 @@ class SleepDetector:
     def on_file_available(self, data_type, filename):
         print("new file available for data type: {}".format(data_type))
         print("  |- file: {}".format(filename))
-        if data_type == DataType.BasebandApDataType:
-            print("processing baseband ap data from file")
-        elif data_type == DataType.SleepDataType:
-            print("processing sleep data from file")
+        print("processing sleep data from file")
 
     def on_meta_file_available(self, session_id, meta_filename):
         print("new meta file available for recording with id: {}".format(session_id))
