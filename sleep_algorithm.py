@@ -27,7 +27,7 @@ class SleepDetector:
         self.recorder = self.mc.get_data_recorder()
         self.recorder.subscribe_to_file_available(DataType.SleepDataType, self.on_file_available)
         self.recorder.subscribe_to_meta_file_available(self.on_meta_file_available)
-        self.recorder.start_recording(DataType.SleepDataType, "./logs")
+        self.recorder.start_recording(DataType.SleepDataType, ".")
 
         # Stop running application and set module in manual mode.
         try:
