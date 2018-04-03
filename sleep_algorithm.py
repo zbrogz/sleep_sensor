@@ -39,8 +39,8 @@ class SleepDetector:
 
         # Load x4m200 respiration detection profile
         self.x4m200.load_profile(0x47fabeba)
-        # Sensitivity can be adjusted to reduce false positives (0-9, default 5)
-        self.x4m200.set_sensitivity(1)
+        # Sensitivity can be adjusted to reduce false positives (0-9)
+        self.x4m200.set_sensitivity(3)
         # Setting detection zone (in meters) can also reduce false positives.
         # For example, smaller rooms may benefit from reducing the second parameter to the room size
         self.x4m200.set_detection_zone(0.4, 5.0)
